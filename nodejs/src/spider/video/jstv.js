@@ -212,7 +212,6 @@ export default {
         fastify.post('/detail', detail);
         fastify.post('/play', play);
         fastify.post('/search', search);
-        fastify.get('/proxy/:what/:ids/:end', proxy);
         fastify.get('/test', test);
     },
 };
