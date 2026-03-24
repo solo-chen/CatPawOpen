@@ -103,59 +103,6 @@ async function detail(inReq, _outResp) {
     };
 }
 
-async function proxy(inReq, outResp) {
-    const what = inReq.params.what;
-    const purl = decodeURIComponent(inReq.params.ids);
-    if (what == 'hls') {
-        const resp = await req(purl, {
-            method: 'get',
-        });
-        const plist = HLS.parse(resp.data);
-        if (plist.variants) {
-            for (const v of plist.variants) {
-                if (!v.uri.startsWith('http')) {
-                    v.uri = new URL(v.uri, purl).toString();
-                }
-            }
-            plist.variants.map((variant) => {
-                variant.uri = inReq.server.prefix + '/proxy/hls/' + encodeURIComponent(variant.uri) + '/.m3u8';
-            });
-        }
-        if (plist.segments) {
-            for (const s of plist.segments) {
-                if (!s.uri.startsWith('http')) {
-                    s.uri = new URL(s.uri, purl).toString();
-                }
-                if (s.key && s.key.uri && !s.key.uri.startsWith('http')) {
-                    s.key.uri = new URL(s.key.uri, purl).toString();
-                }
-            }
-            plist.segments.map((seg) => {
-                seg.uri = inReq.server.prefix + '/proxy/ts/' + encodeURIComponent(seg.uri) + '/.ts';
-            });
-        }
-        const hls = HLS.stringify(plist);
-        let hlsHeaders = {};
-        if (resp.headers['content-length']) {
-            Object.assign(hlsHeaders, resp.headers, {
-                'content-length': hls.length.toString(),
-            });
-        } else {
-            Object.assign(hlsHeaders, resp.headers);
-        }
-        delete hlsHeaders['transfer-encoding'];
-        delete hlsHeaders['cache-control'];
-        if (hlsHeaders['content-encoding'] == 'gzip') {
-            delete hlsHeaders['content-encoding'];
-        }
-        outResp.code(resp.status).headers(hlsHeaders);
-        return hls;
-    } else {
-        outResp.redirect(purl);
-        return;
-    }
-}
-
 async function play(inReq, _outResp) {
     const id = inReq.body.id;
     
