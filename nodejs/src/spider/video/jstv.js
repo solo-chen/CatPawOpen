@@ -12,8 +12,8 @@ async function request(reqUrl) {
 }
 
 async function init(inReq, _outResp) {
-    url = inReq.server.config.iptv.url;
-    categories = inReq.server.config.iptv.categories;
+    url = inReq.server.config.jstv.url;
+    categories = inReq.server.config.jstv.categories;
     return {};
 }
 
