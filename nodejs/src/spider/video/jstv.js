@@ -69,9 +69,19 @@ async function home(_inReq, _outResp) {
 async function category(inReq, _outResp) {
     const tid = inReq.body.id;
     const pg = inReq.body.page;
+    const userFilters = inReq.body.filters || {};
     let page = pg || 1;
     if (page == 0) page = 1;
-    const data = await request(url + `?ac=detail&t=${tid}&pg=${page}`);
+     // 基础 URL
+    let reqUrl = `${url}?ac=detail&t=${tid}&pg=${page}`;
+
+    // 有筛选就拼接 &f=...（必须编码）
+    if (Object.keys(userFilters).length > 0) {
+        const fStr = JSON.stringify(userFilters);
+        const fUri = encodeURIComponent(fStr);
+        reqUrl += `&f=${fUri}`;
+    }
+    const data = await request(reqUrl);
     let videos = [];
     for (const vod of data.list) {
         videos.push({
