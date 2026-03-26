@@ -22,11 +22,14 @@ const testSiteLikes = [];
 async function home(_inReq, _outResp) {
     const data = await request(url);
     let classes = [];
+    let classIds = [];
     for (const cls of data.class) {
         const n = cls.type_name.toString().trim();
         if (categories && categories.length > 0) {
             if (categories.indexOf(n) < 0) continue;
         }
+        classIds.push(cls.type_id.toString());
+        
         classes.push({
             type_id: cls.type_id.toString(),
             type_name: n,
@@ -36,6 +39,15 @@ async function home(_inReq, _outResp) {
         classes = classes.sort((a, b) => {
             return categories.indexOf(a.type_name) - categories.indexOf(b.type_name);
         });
+    }
+    let validFilter = {};
+    if (data.filter && typeof data.filter === 'object') {
+        for (let key of Object.keys(data.filter)) {
+            // 只保留当前分类里存在的 type_id 作为 key
+            if (classIds.includes(key)) {
+                validFilter[key] = data.filter[key];
+            }
+        }
     }
     if (data.list) {
         const likes = await request(url + `?ac=detail&ids=${data.list.map((v) => v.vod_id).join(',')}`);
@@ -50,6 +62,7 @@ async function home(_inReq, _outResp) {
     }
     return {
         class: classes,
+        filters: validFilter,
     };
 }
 
