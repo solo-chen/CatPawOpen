@@ -81,11 +81,15 @@ async function category(inReq, _outResp) {
             vod_remarks: vod.vod_remarks,
         });
     }
+    const currentFilter = data.filters && data.filters[tid]
+        ? data.filters[tid]
+        : [];
     return {
         page: parseInt(data.page),
         pagecount: data.pagecount,
         total: data.total,
         list: videos,
+        filter: currentFilter,
     };
 }
 
